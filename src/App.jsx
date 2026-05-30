@@ -9,6 +9,7 @@ import { Chessboard } from "react-chessboard";
 const App = () => {
   const stockfishEngine = new Worker("/stockfish-18.js");
   const chess = new Chess();
+  const chessGameRef = useRef(chess);
   const chessboardOptions = {
     boardStyle: {
       borderRadius: "4px",
@@ -29,6 +30,7 @@ const App = () => {
       const inputPGN = e.target.value.split("\n");
       setPgn(inputPGN);
       chess.loadPgn(pgn.join("\n"));
+      setPosition(chess.fen());
     }
   };
 
@@ -36,6 +38,7 @@ const App = () => {
     if (e.key === "Enter") {
       const inputFEN = e.target.value;
       chess.load(inputFEN);
+      setPosition(chess.fen());
       console.log(chess.fen());
     }
   };
@@ -43,7 +46,7 @@ const App = () => {
   return (
     <>
       <div className="chessboard-container">
-        <Chessboard options={chessboardOptions} />
+        <Chessboard position={position} options={chessboardOptions} />
       </div>
       <input
         type="text"
@@ -51,13 +54,13 @@ const App = () => {
         placeholder="Enter PGN"
         onKeyPress={(e) => handlePGNInput(e)}
       />
+      <button onClick={() => console.log(chess.fen())}>Load PGN</button>
       <input
         type="text"
         id="fen-input"
         placeholder="Enter FEN"
         onKeyPress={(e) => handleFENInput(e)}
       />
-      <button onClick={() => console.log(chess.fen())}>Load PGN</button>
     </>
   );
 };
