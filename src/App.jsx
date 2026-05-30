@@ -20,15 +20,44 @@ const App = () => {
 
   const [position, setPosition] = useState("");
   const [evaluation, setEvaluation] = useState(null);
+  const [pgn, setPgn] = useState([]);
 
-  useEffect(() => {}, []);
+  // useEffect(() => {}, []);
+
+  const handlePGNInput = (e) => {
+    if (e.key === "Enter") {
+      const inputPGN = e.target.value.split("\n");
+      setPgn(inputPGN);
+      chess.loadPgn(pgn.join("\n"));
+    }
+  };
+
+  const handleFENInput = (e) => {
+    if (e.key === "Enter") {
+      const inputFEN = e.target.value;
+      chess.load(inputFEN);
+      console.log(chess.fen());
+    }
+  };
 
   return (
     <>
       <div className="chessboard-container">
         <Chessboard options={chessboardOptions} />
       </div>
-      <input type="text" id="pgn-input" placeholder="Enter PGN" />
+      <input
+        type="text"
+        id="pgn-input"
+        placeholder="Enter PGN"
+        onKeyPress={(e) => handlePGNInput(e)}
+      />
+      <input
+        type="text"
+        id="fen-input"
+        placeholder="Enter FEN"
+        onKeyPress={(e) => handleFENInput(e)}
+      />
+      <button onClick={() => console.log(chess.fen())}>Load PGN</button>
     </>
   );
 };
