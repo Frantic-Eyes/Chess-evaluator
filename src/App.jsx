@@ -1,15 +1,21 @@
-//TODO: add input for PGN and FEN
+//TODO: add input for PGN and FEN ------DONE
+//TODO: add chessboard display using react-chessboard ------DONE
+//TODO: connect chess.js and update chessboard based on pgn and fen input
 //TODO: add stockfish engine and evaluation logic
 //TODO: add UI for evaluation and best move suggestions
 //TODO: add validation for PGN and FEN input
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
+import Engine from "./stockfish/engine";
+
 const App = () => {
-  const stockfishEngine = new Worker("/stockfish-18.js");
   const chess = new Chess();
   const chessGameRef = useRef(chess);
+  const engineRef = useRef(null);
+
+  if (!engineRef.current) engineRef.current = new Engine();
   const chessboardOptions = {
     boardStyle: {
       borderRadius: "4px",
