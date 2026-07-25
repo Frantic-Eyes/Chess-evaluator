@@ -8,7 +8,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
-import Engine from "./stockfish/engine";
+import Engine from "./workers/engine2.js";
 
 const App = () => {
   const chessGameRef = useRef(new Chess());
@@ -19,11 +19,35 @@ const App = () => {
   const [pgn, setPgn] = useState([]);
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
   const [fenHistory, setFenHistory] = useState([]);
+  const [evalBar, setEvalBar] = useState(0);
 
+  const engineRef = useRef(null);
+
+  //mounts the engine and hanldes cleanup when the component unmounts
   useEffect(() => {
-    const engineRef = useRef(null);
-    if (!engineRef.current) engineRef.current = new Engine();
+    engineRef.current = new Engine();
+
+    engineRef.current.onMessage((message) => {
+      console.log("Engine message:", message);
+    });
+
+    return () => {
+      if (engineRef.current) {
+        engineRef.current.terminate();
+      }
+    };
   }, []);
+
+  function getEvaluation(fen) {
+    console.log("Engine is ready. Evaluating position:", fen);
+    engineRef.current.evaluatePosition(fen);
+  }
+
+  //eval bar
+  useEffect(() => {
+    console.log("Position changed:", position);
+    getEvaluation(position);
+  }, [position]);
 
   const chessboardOptions = {
     boardStyle: {
@@ -113,7 +137,7 @@ const App = () => {
     }
   };
   return (
-    <>
+    <div className="">
       <div className="chessboard-container">
         <Chessboard options={chessboardOptions} />
       </div>
@@ -121,17 +145,31 @@ const App = () => {
         type="text"
         id="pgn-input"
         placeholder="Enter PGN"
+        className="border border-gray-300 rounded px-3 py-2"
         onKeyPress={(e) => handlePGNInput(e)}
       />
       <input
         type="text"
         id="fen-input"
         placeholder="Enter FEN"
+        className="border border-gray-300 rounded px-3 py-2"
         onKeyPress={(e) => handleFENInput(e)}
       />
-      <button onClick={handlePreviousMove}>Prev</button>
-      <button onClick={handleNextMove}>Next</button>
-    </>
+      <div className="flex flex-row gap-2">
+        <button
+          className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded"
+          onClick={handlePreviousMove}
+        >
+          Prev
+        </button>
+        <button
+          className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded"
+          onClick={handleNextMove}
+        >
+          Next
+        </button>
+      </div>
+    </div>
   );
 };
 

@@ -1,10 +1,3 @@
-/*
- * Engine wrapper for Stockfish worker
- * This file is moved into `src` so it can be imported by the app.
- */
-
-const stockfish = new Worker("/stockfish/stockfish-18.js");
-
 type EngineMessage = {
   uciMessage: string;
   bestMove?: string;
@@ -17,23 +10,31 @@ type EngineMessage = {
 
 export default class Engine {
   stockfish: Worker;
-  onMessage: (callback: (messageData: EngineMessage) => void) => void;
-  isReady: boolean;
+  isReady: boolean = false;
+  private messageCallbacks: ((messageData: EngineMessage) => void)[] = [];
 
   constructor() {
-    this.stockfish = stockfish;
-    this.isReady = false;
-    this.onMessage = (callback) => {
-      this.stockfish.addEventListener("message", (e) => {
-        callback(this.transformSFMessageData(e));
-      });
-    };
+    // 1. Fresh worker instance allocated exclusively to this Engine instantiation
+    this.stockfish = new Worker("/stockfish-18.js");
+
+    // 2. Setup a single orchestrating event listener
+    this.stockfish.addEventListener("message", (e) => {
+      const parsedData = this.transformSFMessageData(e);
+
+      // Manage internal ready state
+      if (parsedData.uciMessage === "readyok") {
+        this.isReady = true;
+      }
+
+      // Broadcast events out to all registered observers
+      this.messageCallbacks.forEach((callback) => callback(parsedData));
+    });
+
     this.init();
   }
 
-  private transformSFMessageData(e: MessageEvent<string>) {
+  private transformSFMessageData(e: MessageEvent<string>): EngineMessage {
     const uciMessage = e?.data ?? e;
-
     return {
       uciMessage,
       bestMove: uciMessage.match(/bestmove\s+(\S+)/)?.[1],
@@ -48,24 +49,15 @@ export default class Engine {
   init() {
     this.stockfish.postMessage("uci");
     this.stockfish.postMessage("isready");
-    this.onMessage(({ uciMessage }) => {
-      if (uciMessage === "readyok") {
-        this.isReady = true;
-      }
-    });
   }
 
-  onReady(callback: () => void) {
-    this.onMessage(({ uciMessage }) => {
-      if (uciMessage === "readyok") {
-        callback();
-      }
-    });
+  // Safe subscription method that won't overwrite other core listeners
+  onMessage(callback: (messageData: EngineMessage) => void) {
+    this.messageCallbacks.push(callback);
   }
 
   evaluatePosition(fen: string, depth = 12) {
     if (depth > 24) depth = 24;
-
     this.stockfish.postMessage(`position fen ${fen}`);
     this.stockfish.postMessage(`go depth ${depth}`);
   }
@@ -76,6 +68,8 @@ export default class Engine {
 
   terminate() {
     this.isReady = false;
+    this.messageCallbacks = [];
     this.stockfish.postMessage("quit");
+    this.stockfish.terminate(); // Completely dismantle worker thread on component unmount
   }
 }
