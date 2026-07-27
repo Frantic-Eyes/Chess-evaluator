@@ -39,7 +39,7 @@ export default class Engine {
       uciMessage,
       bestMove: uciMessage.match(/bestmove\s+(\S+)/)?.[1],
       ponder: uciMessage.match(/ponder\s+(\S+)/)?.[1],
-      positionEvaluation: uciMessage.match(/cp\s+(\S+)/)?.[1],
+      positionEvaluation: uciMessage.match(/cp\s+(-?\d+)/)?.[1],
       possibleMate: uciMessage.match(/mate\s+(\S+)/)?.[1],
       pv: uciMessage.match(/ pv\s+(.*)/)?.[1],
       depth: Number(uciMessage.match(/ depth\s+(\S+)/)?.[1] ?? 0),

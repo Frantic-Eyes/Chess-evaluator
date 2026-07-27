@@ -22,13 +22,21 @@ const App = () => {
   const [evalBar, setEvalBar] = useState(0);
 
   const engineRef = useRef(null);
+  const depthRef = useRef(12);
 
   //mounts the engine and hanldes cleanup when the component unmounts
   useEffect(() => {
     engineRef.current = new Engine();
 
     engineRef.current.onMessage((message) => {
+      console.log(JSON.stringify(message.positionEvaluation));
       console.log("Engine message:", message);
+      if (message.depth === depthRef.current) {
+        setEvaluation(message.positionEvaluation);
+        setEvalBar(
+          message.positionEvaluation / 100 + (message.positionEvaluation % 100),
+        );
+      }
     });
 
     return () => {
@@ -38,9 +46,10 @@ const App = () => {
     };
   }, []);
 
-  function getEvaluation(fen) {
+  function getEvaluation(fen, depth = 12) {
     console.log("Engine is ready. Evaluating position:", fen);
-    engineRef.current.evaluatePosition(fen);
+    depthRef.current = depth;
+    engineRef.current.evaluatePosition(fen, depth);
   }
 
   //eval bar
@@ -169,6 +178,7 @@ const App = () => {
           Next
         </button>
       </div>
+      <div>Evaluation Bar: {evalBar}</div>
     </div>
   );
 };
