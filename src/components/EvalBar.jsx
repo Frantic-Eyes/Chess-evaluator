@@ -5,7 +5,12 @@ export const EvalBar = ({ evaluation }) => {
     Math.min(Math.max(1 / (1 + Math.exp(-x)), min), max);
   return (
     <>
-      <div>EvalBar : {sigmoid(evaluation, 0.2, 0.9)}</div>
+      <div className="h-100 w-5 bg-gray-500">
+        <div
+          className="h-100 w-full bg-gray-300"
+          style={{ height: `${sigmoid(evaluation, 0.2, 0.9) * 100}%` }}
+        ></div>
+      </div>
     </>
   );
 };

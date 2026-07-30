@@ -155,14 +155,14 @@ const App = () => {
         id="pgn-input"
         placeholder="Enter PGN"
         className="border border-gray-300 rounded px-3 py-2"
-        onKeyPress={(e) => handlePGNInput(e)}
+        onKeyDown={(e) => handlePGNInput(e)}
       />
       <input
         type="text"
         id="fen-input"
         placeholder="Enter FEN"
         className="border border-gray-300 rounded px-3 py-2"
-        onKeyPress={(e) => handleFENInput(e)}
+        onKeyDown={(e) => handleFENInput(e)}
       />
       <div className="flex flex-row gap-2">
         <button
