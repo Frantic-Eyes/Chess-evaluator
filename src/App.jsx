@@ -9,6 +9,7 @@ import { useState, useEffect, useRef } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import Engine from "./workers/engine2.js";
+import { EvalBar } from "./components/EvalBar.jsx";
 
 const App = () => {
   const chessGameRef = useRef(new Chess());
@@ -29,13 +30,12 @@ const App = () => {
     engineRef.current = new Engine();
 
     engineRef.current.onMessage((message) => {
-      console.log(JSON.stringify(message.positionEvaluation));
       console.log("Engine message:", message);
       if (message.depth === depthRef.current) {
-        setEvaluation(message.positionEvaluation);
-        setEvalBar(
-          message.positionEvaluation / 100 + (message.positionEvaluation % 100),
-        );
+        const evaluation = parseInt(message.positionEvaluation, 10);
+        console.log("Evaluation at depth", depthRef.current, ":", evaluation);
+        setEvaluation(evaluation);
+        setEvalBar(evaluation / 100);
       }
     });
 
@@ -179,6 +179,7 @@ const App = () => {
         </button>
       </div>
       <div>Evaluation Bar: {evalBar}</div>
+      <EvalBar evaluation={evalBar} />
     </div>
   );
 };
