@@ -8,7 +8,7 @@ export const EvalBar = ({ evaluation }) => {
       <div className="h-100 w-5 bg-gray-500">
         <div
           className="h-100 w-full bg-gray-300"
-          style={{ height: `${sigmoid(evaluation, 0.2, 0.9) * 100}%` }}
+          style={{ height: `${sigmoid(evaluation, 0.1, 0.9) * 100}%` }}
         ></div>
       </div>
     </>
